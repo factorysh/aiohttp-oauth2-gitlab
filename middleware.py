@@ -5,13 +5,15 @@ from aiohttp_session import get_session
 
 from gitlab import GitlabClient
 
+REDIRECTED = '/redirected'
+
 
 async def redirected(request):
     """
     The user came from gitlab authentification page, he is authenticated
     """
     session = await get_session(request)
-    t = session['oauth_token']
+    t = session['oauth_state']
     if t is None:
         raise web.HTTPBadRequest()
     if request.query['state'] != t:
@@ -22,11 +24,8 @@ async def redirected(request):
         raise web.HTTPFound("/")
 
     code = request.query['code']
-    print("code", code)
     token, data = await request.app['gitlab'].get_access_token(code,
                                                                redirect_uri="http://localhost:5000/redirected")
-    print("token", token)
-    print("data", data)
     session['refresh_token'] = data['refresh_token']
     session['access_token'] = token
     raise web.HTTPFound(my_url)
@@ -35,7 +34,7 @@ async def redirected(request):
 @web.middleware
 async def gitlab_oauth_middleware(request, handler):
     # No middlware for path /redirected
-    if request.path == '/redirected':
+    if request.path == REDIRECTED:
         return await handler(request)
 
     session = await get_session(request)
@@ -43,17 +42,16 @@ async def gitlab_oauth_middleware(request, handler):
     token = session.get('access_token')
     if token is None:
         t = uuid.uuid4().hex
-        session['oauth_token'] = t
+        session['oauth_state'] = t
         session['my_url'] = str(request.url)
         raise web.HTTPFound("".join([g.base_url,
                                      g.get_authorize_url(scope="read_user",
                                                          state=t,
                                                          redirect_uri="http://localhost:5000/redirected")]))
     name = session.get('name')
-    print("name", name)
     if name is None:
         me = await request.app['gitlab'].request('GET', '/api/v4/user', access_token=token)
-        print("me", me)
+        #print("me", me)
         session['name'] = me['name']
     resp = await handler(request)
     return resp
@@ -64,4 +62,4 @@ def add_gitlab_oauth(app, client_id, client_secret, base_url):
                                  client_secret=client_secret,
                                  base_url=base_url)
     app.middlewares.append(gitlab_oauth_middleware)
-    app.add_routes([web.get('/redirected', redirected)])
+    app.add_routes([web.get(REDIRECTED, redirected)])
