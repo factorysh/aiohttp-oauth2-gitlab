@@ -8,6 +8,21 @@ from gitlab import GitlabClient
 REDIRECTED = "/redirected"
 
 
+def base_url(request):
+    b = request.app.get("base_url")
+    if b is not None:
+        return b
+    b = "%s://%s" % (request.url.scheme, request.url.host)
+    p = request.url.port
+    if (request.url.scheme == "https" and p != 443) or (p != 80):
+        return "%s:%s" % (b, str(p))
+    return b
+
+
+def redirected_url(request):
+    return "".join([base_url(request), REDIRECTED])
+
+
 async def redirected(request):
     """
     The user came from gitlab authentification page, he is authenticated
@@ -25,7 +40,7 @@ async def redirected(request):
 
     code = request.query["code"]
     token, data = await request.app["gitlab"].get_access_token(
-        code, redirect_uri="http://localhost:5000/redirected"
+        code, redirect_uri=redirected_url(request)
     )
     session["refresh_token"] = data["refresh_token"]
     session["access_token"] = token
@@ -52,7 +67,7 @@ async def gitlab_oauth_middleware(request, handler):
                     g.get_authorize_url(
                         scope="read_user",
                         state=t,
-                        redirect_uri="http://localhost:5000/redirected",
+                        redirect_uri=redirected_url(request),
                     ),
                 ]
             )
