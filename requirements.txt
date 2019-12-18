@@ -1,1 +1,2 @@
 aioauth-client
+aiohttp_session[secure]
