@@ -14,10 +14,10 @@ logging.basicConfig(level=logging.DEBUG)
 routes = web.RouteTableDef()
 
 
-@routes.get('/')
+@routes.get("/")
 async def hello(request):
     session = await get_session(request)
-    return web.Response(text="Hello, %s" % session.get('name'))
+    return web.Response(text="Hello, %s" % session.get("name"))
 
 
 def make_app(client_id, client_secret, base_url):
@@ -26,9 +26,9 @@ def make_app(client_id, client_secret, base_url):
     fernet_key = fernet.Fernet.generate_key()
     secret_key = base64.urlsafe_b64decode(fernet_key)
     setup(app, EncryptedCookieStorage(secret_key))
-    add_gitlab_oauth(app, client_id=client_id,
-                                 client_secret=client_secret,
-                                 base_url=base_url)
+    add_gitlab_oauth(
+        app, client_id=client_id, client_secret=client_secret, base_url=base_url
+    )
     # oauth middleware must be after session middleware
     app.add_routes(routes)
     return app
@@ -36,7 +36,13 @@ def make_app(client_id, client_secret, base_url):
 
 if __name__ == "__main__":
     import os
-    web.run_app(make_app(client_id=os.getenv('GITLAB_ID'),
-                         client_secret=os.getenv('GITLAB_SECRET'),
-                         base_url=os.getenv('GITLAB_URL')),
-                host='localhost', port=5000)
+
+    web.run_app(
+        make_app(
+            client_id=os.getenv("GITLAB_ID"),
+            client_secret=os.getenv("GITLAB_SECRET"),
+            base_url=os.getenv("GITLAB_URL"),
+        ),
+        host="localhost",
+        port=5000,
+    )
