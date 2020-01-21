@@ -3,7 +3,7 @@ import uuid
 from aiohttp import web
 from aiohttp_session import get_session
 
-from gitlab import GitlabClient
+from aio_http_oauth2_gitlab.gitlab import GitlabClient
 
 REDIRECTED = "/redirected"
 
