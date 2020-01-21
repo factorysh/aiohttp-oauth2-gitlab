@@ -30,19 +30,19 @@ def make_app(client_id, client_secret, base_url):
         app, client_id=client_id, client_secret=client_secret, base_url=base_url
     )  # add oauth2 gitlab middleware
     # oauth middleware must be after session middleware
-    app.add_routes(routes)  # just the hello handler
     return app
 
 
 if __name__ == "__main__":
     import os
 
+    app = make_app(
+        client_id=os.getenv("GITLAB_ID"),
+        client_secret=os.getenv("GITLAB_SECRET"),
+        base_url=os.getenv("GITLAB_URL"),
+    )
+    app.add_routes(routes)  # just the hello handler
+
     web.run_app(
-        make_app(
-            client_id=os.getenv("GITLAB_ID"),
-            client_secret=os.getenv("GITLAB_SECRET"),
-            base_url=os.getenv("GITLAB_URL"),
-        ),
-        host="localhost",
-        port=5000,
+        app, host="localhost", port=5000,
     )
