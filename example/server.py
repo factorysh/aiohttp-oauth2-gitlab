@@ -21,16 +21,16 @@ async def hello(request):
 
 
 def make_app(client_id, client_secret, base_url):
-    app = web.Application()
+    app = web.Application()  # plain old aiohttp application
     # secret_key must be 32 url-safe base64-encoded bytes
     fernet_key = fernet.Fernet.generate_key()
     secret_key = base64.urlsafe_b64decode(fernet_key)
-    setup(app, EncryptedCookieStorage(secret_key))
+    setup(app, EncryptedCookieStorage(secret_key))  # add session
     add_gitlab_oauth(
         app, client_id=client_id, client_secret=client_secret, base_url=base_url
-    )
+    )  # add oauth2 gitlab middleware
     # oauth middleware must be after session middleware
-    app.add_routes(routes)
+    app.add_routes(routes)  # just the hello handler
     return app
 
 
