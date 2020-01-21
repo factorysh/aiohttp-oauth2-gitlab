@@ -6,7 +6,7 @@ from cryptography import fernet
 from aiohttp_session import setup, get_session
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-from aio_http_oauth2_gitlab.middleware import add_gitlab_oauth
+from aiohttp_oauth2_gitlab.middleware import add_gitlab_oauth
 
 
 logging.basicConfig(level=logging.DEBUG)

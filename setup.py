@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='aio-http-oauth2-gitlab',
+    name='aiohttp-oauth2-gitlab',
     version='0.1',
     description='',
-    url='https://github.com/factorysh/aio-http-oauth2-gitlab',
+    url='https://github.com/factorysh/aiohttp-oauth2-gitlab',
     install_requires=[
         'aioauth-client',
         'aiohttp_session[secure]',
